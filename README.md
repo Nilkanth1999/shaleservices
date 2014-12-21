@@ -15,15 +15,14 @@ how to fully check out the atheme tree, as it is spread across many repositories
 Whatever you do, make sure you do *not* install Atheme into the same location as the source.
 Atheme will default to installing in `$HOME/atheme`, so make sure you plan accordingly for this.
 
-    $ git submodule update --init
     $ ./configure
     $ make
     $ make install
 
-If you're still lost, read [INSTALL](INSTALL) or [GIT-Access](GIT-Access) for hints.
+If you're still lost, read [INSTALL](INSTALL) for hints.
 
 ## links / contact
 
- * [GitHub](http://www.github.com/atheme/atheme)
- * [Website](http://www.atheme.net)
- * [IRC](irc://irc.atheme.org/#atheme)
+ * [GitHub](http://www.github.com/ShaleCoders/shaleservices)
+ * [Website](http://www.letstalkcoding.net)
+ * [IRC](irc://irc.letstalkcoding.net/#shaleservices)

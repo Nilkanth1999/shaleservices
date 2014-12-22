@@ -23,9 +23,6 @@ You should also read the README and FAQ files.
 NOTE: if you are using a third party package of Services, most of this section
 will not apply.
 
-NOTE: if you are using a copy of Atheme downloaded from Git, you need to 
-remember to run `git submodule update --init`. If not, you may ignore this step.
-
 IMPORTANT NOTE: it is not recommended to use and install services as root.
 Use an unprivileged user account.
 
@@ -68,9 +65,6 @@ The IRCds supported by Services are listed in the example config
 (dist/atheme.conf.example). Although many others are supported, Services can
 provide the richest experience with one of the recommended IRCds: Charybdis,
 ShadowIRCD and UnrealIRCd.
-
-If you are installing Services from Git and need libmowgli, please read the 
-GIT-Access file for information on how to pull in libmowgli as a submodule.
 
 Run the "configure" script:
 	$ ./configure --prefix=/path/to/install/

@@ -639,24 +639,20 @@ void myuser_login(service_t *svs, user_t *u, myuser_t *mu, bool sendaccount)
 	if ((md_failnum = metadata_find(mu, "private:loginfail:failnum")) && (atoi(md_failnum->value) > 0))
 	{
 		metadata_t *md_failtime, *md_failaddr;
-		time_t ts = CURRTIME;
+		time_t ts;
 
 		notice(svs->me->nick, u->nick, "\2%d\2 failed %s since last login.",
 			atoi(md_failnum->value), (atoi(md_failnum->value) == 1) ? "login" : "logins");
 
 		md_failtime = metadata_find(mu, "private:loginfail:lastfailtime");
-		if (md_failtime != NULL)
-			ts = atol(md_failtime->value);
-
+		ts = atol(md_failtime->value);
 		md_failaddr = metadata_find(mu, "private:loginfail:lastfailaddr");
-		if (md_failaddr != NULL)
-		{
-			tm = *localtime(&ts);
-			strftime(strfbuf, sizeof strfbuf, TIME_FORMAT, &tm);
 
-			notice(svs->me->nick, u->nick, "Last failed attempt from: \2%s\2 on %s.",
-				md_failaddr->value, strfbuf);
-		}
+		tm = *localtime(&ts);
+		strftime(strfbuf, sizeof strfbuf, TIME_FORMAT, &tm);
+
+		notice(svs->me->nick, u->nick, "Last failed attempt from: \2%s\2 on %s.",
+			md_failaddr->value, strfbuf);
 
 		metadata_delete(mu, "private:loginfail:failnum");	/* md_failnum now invalid */
 		metadata_delete(mu, "private:loginfail:lastfailtime");
@@ -871,7 +867,7 @@ void command_success_nodata(sourceinfo_t *si, const char *fmt, ...)
 	vsnprintf(buf, BUFSIZE, fmt, args);
 	va_end(args);
 
-	if (si->v != NULL && si->v->cmd_success_nodata)
+	if (si->v != NULL && si->v->cmd_fail)
 	{
 		si->v->cmd_success_nodata(si, buf);
 		return;
@@ -914,7 +910,7 @@ void command_success_string(sourceinfo_t *si, const char *result, const char *fm
 	vsnprintf(buf, BUFSIZE, fmt, args);
 	va_end(args);
 
-	if (si->v != NULL && si->v->cmd_success_string)
+	if (si->v != NULL && si->v->cmd_fail)
 	{
 		si->v->cmd_success_string(si, result, buf);
 		return;
@@ -935,12 +931,6 @@ static void command_table_cb(const char *line, void *data)
 
 void command_success_table(sourceinfo_t *si, table_t *table)
 {
-	if (si->v != NULL && si->v->cmd_success_table)
-	{
-		si->v->cmd_success_table(si, table);
-		return;
-	}
-
 	table_render(table, command_table_cb, si);
 }
 
@@ -1119,14 +1109,14 @@ bool check_vhost_validity(sourceinfo_t *si, const char *host)
 	/* Never ever allow @!?* as they have special meaning in all ircds */
 	/* Empty, space anywhere and colon at the start break the protocol */
 	/* Also disallow ASCII 1-31 and "' as no sane IRCd allows them in hosts */
-	if (strchr(host, '@') || strchr(host, '!') || strchr(host, '?') ||
-			strchr(host, '*') || strchr(host, ' ') || strchr(host, '\'') ||
-			strchr(host, '"') || *host == ':' || *host == '\0' ||
-			has_ctrl_chars(host))
-	{
-		command_fail(si, fault_badparams, _("The vhost provided contains invalid characters."));
-		return false;
-	}
+	if (strchr(host, '@') || strchr(host, '!') || strchr(host, '?') || strchr(host, '~') ||
+                        strchr(host, '*') || strchr(host, ' ') || strchr(host, '\'') || strchr(host, '%') ||
+                        strchr(host, '^') || strchr(host, '&') || strchr(host, ')') || strchr(host, '$') ||
+                        strchr(host, '(') || strchr(host, '"') || *host == ':' || *host == '\0')
+        {
+                command_fail(si, fault_badparams, _("The vhost provided contains invalid characters."));
+                return false;
+        }
 	if (strlen(host) >= HOSTLEN)
 	{
 		command_fail(si, fault_badparams, _("The vhost provided is too long."));
@@ -1138,7 +1128,7 @@ bool check_vhost_validity(sourceinfo_t *si, const char *host)
 		command_fail(si, fault_badparams, _("The vhost provided looks like a CIDR mask."));
 		return false;
 	}
-	if (!is_valid_host(host))
+        if (!is_valid_host(host))
 	{
 		/* This can be stuff like missing dots too. */
 		command_fail(si, fault_badparams, _("The vhost provided is invalid."));
@@ -1146,6 +1136,7 @@ bool check_vhost_validity(sourceinfo_t *si, const char *host)
 	}
 	return true;
 }
+
 
 /* vim:cinoptions=>s,e0,n0,f0,{0,}0,^0,=s,ps,t0,c3,+s,(2s,us,)20,*30,gs,hs
  * vim:ts=8
